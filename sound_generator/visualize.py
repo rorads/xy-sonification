@@ -1,38 +1,12 @@
 #!/usr/bin/env python3
 
 import argparse
-import csv
 import os
 import matplotlib.pyplot as plt
+import polars as pl
+import soundfile as sf
 
-
-def read_csv_data(csv_file):
-    data = []
-    with open(csv_file, newline='') as f:
-        sample = f.read(1024)
-        f.seek(0)
-        if ',' in sample:
-            reader = csv.reader(f, delimiter=',')
-            rows = list(reader)
-        else:
-            rows = [line.strip().split() for line in f if line.strip()]
-        header = False
-        if rows:
-            try:
-                float(rows[0][0])
-                float(rows[0][1])
-            except Exception:
-                header = True
-        for row in (rows[1:] if header else rows):
-            if len(row) < 2:
-                continue
-            try:
-                x = float(row[0])
-                y = float(row[1])
-                data.append((x, y))
-            except Exception:
-                continue
-    return data
+from utils import read_csv_data
 
 
 def plot_data(csv_file, output_folder):
@@ -103,14 +77,37 @@ def plot_data(csv_file, output_folder):
     plt.close()
 
 
+def plot_spectogram_of_generated_audio(audio_file, output_folder):
+    """
+    Plot the spectogram of the generated audio file.
+    """
+    audio_data, sample_rate = sf.read(audio_file)
+    plt.figure(figsize=(10, 6))
+    plt.specgram(audio_data, Fs=sample_rate)
+    plt.colorbar(format='%+2.0f dB')
+    plt.xlabel('Time')
+    plt.ylabel('Frequency')
+    plt.title('Spectogram of Generated Audio')
+    
+    os.makedirs(output_folder, exist_ok=True)
+    spec_file = os.path.join(output_folder, 'spectogram.png')
+    plt.savefig(spec_file)
+    print(f"Spectogram saved to {spec_file}")
+    plt.close()
+
+
 def main():
-    parser = argparse.ArgumentParser(description="Generate graphs for a given CSV file.")
-    parser.add_argument("csv_file", help="Path to the input CSV file")
-    parser.add_argument("output_folder", help="Folder to save the graphs")
+    parser = argparse.ArgumentParser(description="Generate graphs for a given CSV file or audio file.")
+    parser.add_argument("input_file", help="Path to the input csv or audio (.wav) file")
+    parser.add_argument("output_folder", help="Folder to save the visualisations")
     args = parser.parse_args()
-    
-    plot_data(args.csv_file, args.output_folder)
-    
+
+    if args.input_file.endswith(".csv"):
+        plot_data(args.input_file, args.output_folder)
+    elif args.input_file.endswith(".wav"):
+        plot_spectogram_of_generated_audio(args.input_file, args.output_folder)
+    else:
+        print("Invalid file type. Please provide a CSV or WAV file.")
 
 if __name__ == '__main__':
     main()

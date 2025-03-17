@@ -1,99 +1,187 @@
-import csv
 import numpy as np
 import wave
 
 
-def read_csv_data(csv_file):
-    data = []
-    with open(csv_file, newline='') as f:
-        sample = f.read(1024)
-        f.seek(0)
-        if ',' in sample:
-            reader = csv.reader(f, delimiter=',')
-            rows = list(reader)
-        else:
-            rows = [line.strip().split() for line in f if line.strip()]
-        header = False
-        if rows:
-            try:
-                float(rows[0][0])
-                float(rows[0][1])
-            except Exception:
-                header = True
-        for row in (rows[1:] if header else rows):
-            if len(row) < 2:
-                continue
-            try:
-                x = float(row[0])
-                y = float(row[1])
-                data.append((x, y))
-            except Exception:
-                continue
-    return data
+from utils import read_csv_data, extract_columns
 
 
 def sine_strategy(data, sample_rate=44100, tone_duration=0.5):
+    """
+    Basic sine wave sound generation strategy.
+    
+    Creates a sequence of pure tones (sine waves) where:
+    - Each data point becomes a single tone segment
+    - The x-value controls frequency (pitch)
+    - The y-value controls amplitude (volume)
+    
+    Parameters:
+    - data: List of (x,y) coordinates from CSV
+    - sample_rate: Number of samples per second (44.1kHz CD quality)
+    - tone_duration: Length of each tone segment in seconds
+    """
     samples = []
-    max_amplitude = 32767 * 0.7
-    # Map the first column to frequency and second to amplitude (normalized between 0 and 1)
+    max_amplitude = 32767 * 0.7  # 70% of maximum 16-bit amplitude to avoid distortion
+    
+    # Process each data point as a discrete tone
     for x, y in data:
+        # Map x to frequency (Hz): higher x = higher pitch
+        # Base frequency of 200Hz + scaling factor creates audible range
         frequency = 200 + x * 5  # arbitrary mapping
-        amplitude = max_amplitude * max(0, min(y, 1))
-        t = np.linspace(0, tone_duration, int(sample_rate * tone_duration), endpoint=False)
+        
+        # Map y to amplitude (volume): use absolute value to ensure sound
+        # Instead of clamping, use a percentage of max_amplitude
+        amplitude = max_amplitude * 0.5 * (1 + np.tanh(y))  # Maps any y to range [0-1]
+        
+        # Create time axis for this tone segment
+        # Represents evenly spaced time points for the duration
+        t = np.linspace(
+            0, tone_duration, int(sample_rate * tone_duration), endpoint=False
+        )
+        
+        # Generate sine wave for this tone:
+        # 2π * frequency * time = phase angle in radians
+        # sine of this angle * amplitude = waveform
         tone = amplitude * np.sin(2 * np.pi * frequency * t)
         samples.append(tone)
+    
+    # Join all tone segments into continuous audio stream
+    # Empty data returns empty array (no sound)
     return np.concatenate(samples) if samples else np.array([])
 
 
 def phase_mod_strategy(data, sample_rate=44100, tone_duration=0.5):
+    """
+    Phase modulation sound generation strategy.
+    
+    Creates more complex tones using phase modulation (PM):
+    - A carrier wave (base frequency) is modulated by a secondary wave
+    - Creates richer, more dynamic sounds than pure sine waves
+    - Similar to FM synthesis used in many synthesizers
+    
+    Parameters:
+    - data: List of (x,y) coordinates from CSV
+    - sample_rate: Number of samples per second (44.1kHz CD quality)
+    - tone_duration: Length of each tone segment in seconds
+    """
     samples = []
-    max_amplitude = 32767 * 0.7
-    # Use phase modulation to vary the tone
+    max_amplitude = 32767 * 0.7  # 70% of maximum 16-bit amplitude
+    
+    # Process each data point as a modulated tone
     for x, y in data:
+        # Map x to carrier/base frequency (Hz)
         base_freq = 200 + x * 5
+        
+        # Fixed modulation frequency creates consistent sound character
         modulation_freq = 5  # modulation frequency in Hz
+        
+        # y controls modulation depth/intensity
+        # Higher y values create more dramatic modulation
         modulation_index = y * 2  # arbitrary modulation depth scaling
-        t = np.linspace(0, tone_duration, int(sample_rate * tone_duration), endpoint=False)
-        tone = max_amplitude * np.sin(2 * np.pi * base_freq * t + modulation_index * np.sin(2 * np.pi * modulation_freq * t))
+        
+        # Create time axis for this tone segment
+        t = np.linspace(
+            0, tone_duration, int(sample_rate * tone_duration), endpoint=False
+        )
+        
+        # Generate phase-modulated wave:
+        # 1. Inner sin(): creates modulator wave that varies over time
+        # 2. Multiplied by modulation_index: controls modulation intensity
+        # 3. Added to carrier phase (2π * base_freq * t): shifts carrier phase
+        # 4. Outer sin(): final modulated carrier wave
+        # 5. Scaled by amplitude: controls overall volume
+        tone = max_amplitude * np.sin(
+            2 * np.pi * base_freq * t
+            + modulation_index * np.sin(2 * np.pi * modulation_freq * t)
+        )
         samples.append(tone)
+    
+    # Join all tone segments into continuous audio stream
     return np.concatenate(samples) if samples else np.array([])
 
 
 def chord_strategy(data, sample_rate=44100, tone_duration=0.5):
+    """
+    Chord-based sound generation strategy.
+    
+    Creates harmonically rich sounds by combining multiple sine waves:
+    - Each data point produces three simultaneous tones (a triad)
+    - Base frequency plus two additional frequencies (±20 Hz)
+    - Creates fuller, more harmonic sound than single sine waves
+    
+    Parameters:
+    - data: List of (x,y) coordinates from CSV
+    - sample_rate: Number of samples per second (44.1kHz CD quality)
+    - tone_duration: Length of each tone segment in seconds
+    """
     samples = []
-    max_amplitude = 32767 * 0.7
-    # Create a chord by summing three sine waves around the base frequency
+    max_amplitude = 32767 * 0.7  # 70% of maximum 16-bit amplitude
+    
+    # Process each data point as a three-tone chord
     for x, y in data:
+        # Map x to the central frequency (Hz)
         frequency = 200 + x * 5
-        amplitude = max_amplitude * max(0, min(y, 1))
-        t = np.linspace(0, tone_duration, int(sample_rate * tone_duration), endpoint=False)
+        
+        # Map y to amplitude (volume) using tanh to handle any range of y values
+        amplitude = max_amplitude * 0.5 * (1 + np.tanh(y))
+        
+        # Create time axis for this chord segment
+        t = np.linspace(
+            0, tone_duration, int(sample_rate * tone_duration), endpoint=False
+        )
+        
+        # Generate three separate tones with related frequencies:
+        # 1. Central frequency as mapped from x
         tone1 = amplitude * np.sin(2 * np.pi * frequency * t)
+        
+        # 2. Slightly higher pitch (creates harmonic content)
         tone2 = amplitude * np.sin(2 * np.pi * (frequency + 20) * t)
+        
+        # 3. Slightly lower pitch (creates harmonic content)
         tone3 = amplitude * np.sin(2 * np.pi * (frequency - 20) * t)
+        
+        # Mix the three tones together
+        # Division by 3 prevents clipping from combined amplitude
         tone = (tone1 + tone2 + tone3) / 3
         samples.append(tone)
+    
+    # Join all chord segments into continuous audio stream
     return np.concatenate(samples) if samples else np.array([])
 
 
-def generate_audio_file(csv_file, strategy, output_file="output.wav"):
-    data = read_csv_data(csv_file)
+STRATEGY_MAP = {
+    "sine": sine_strategy,
+    "phase_mod": phase_mod_strategy,
+    "chord": chord_strategy,
+}
+
+
+def generate_audio_file(
+    csv_file, strategy_name=None, strategy_func=None, output_file="output.wav"
+):
+    data = extract_columns(read_csv_data(csv_file))
     sample_rate = 44100
     tone_duration = 0.5  # duration for each tone segment in seconds
-    strategy_map = {
-        "sine": sine_strategy,
-        "phase_mod": phase_mod_strategy,
-        "chord": chord_strategy
-    }
-    strategy_func = strategy_map.get(strategy, sine_strategy)
+
+    if strategy_func is None and strategy_name is None:
+        raise ValueError("Either strategy_name or strategy_func must be provided")
+
+    if strategy_func is not None and strategy_name is not None:
+        raise ValueError("Only one of strategy_name or strategy_func can be provided")
+
+    if strategy_func is None:
+        strategy_func = STRATEGY_MAP.get(strategy_name, sine_strategy)
+    else:
+        strategy_func = strategy_func
+
     samples = strategy_func(data, sample_rate=sample_rate, tone_duration=tone_duration)
 
     if samples.size == 0:
         print("No valid data found in CSV file.")
         return
 
-    with wave.open(output_file, 'wb') as wf:
-        wf.setnchannels(1)          # mono
-        wf.setsampwidth(2)          # 16-bit samples
+    with wave.open(output_file, "wb") as wf:
+        wf.setnchannels(1)  # mono
+        wf.setsampwidth(2)  # 16-bit samples
         wf.setframerate(sample_rate)
         wf.writeframes(samples.astype(np.int16).tobytes())
 
@@ -102,9 +190,35 @@ def generate_audio_file(csv_file, strategy, output_file="output.wav"):
 
 if __name__ == "__main__":
     import argparse
-    parser = argparse.ArgumentParser(description="Generate an audio file from CSV data using algorithmic strategies.")
-    parser.add_argument("csv_file", help="Path to the input CSV file containing two columns")
-    parser.add_argument("--strategy", default="sine", choices=["sine", "phase_mod", "chord"], help="Strategy to use for generating sound")
+
+    parser = argparse.ArgumentParser(
+        description="Generate an audio file from CSV data using algorithmic strategies."
+    )
+    parser.add_argument(
+        "csv_file", help="Path to the input CSV file containing two columns"
+    )
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument(
+        "--strategy_name",
+        default="sine",
+        choices=["sine", "phase_mod", "chord"],
+        help="Strategy to use for generating sound",
+    )
+    group.add_argument(
+        "--strategy_func",
+        default=None,
+        help="Strategy function to use for generating sound",
+    )
     parser.add_argument("--output", default="output.wav", help="Output WAV file name")
     args = parser.parse_args()
-    generate_audio_file(args.csv_file, args.strategy, args.output)
+    
+    # Check if both strategy options were provided
+    if args.strategy_name != "sine" and args.strategy_func is not None:
+        parser.error("Only one of --strategy_name or --strategy_func can be provided")
+        
+    generate_audio_file(
+        args.csv_file,
+        strategy_name=args.strategy_name if args.strategy_func is None else None,
+        strategy_func=args.strategy_func,
+        output_file=args.output,
+    )
