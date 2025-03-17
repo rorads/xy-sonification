@@ -1,9 +1,9 @@
 
-# Rabi Oscillation Sonification
+# XY Sonification
 
 A data sonification tool that converts quantum physics data (specifically Rabi oscillation patterns) into sound. This project allows you to explore different methods of sonification through an interactive Streamlit dashboard.
 
-![Rabi Oscillation Sonification](static/screenshot_audio.png)
+![XY Sonification](static/screenshot_audio.png)
 
 ## Overview
 
@@ -16,14 +16,18 @@ This application provides multiple sonification strategies to transform data int
 
 The dashboard also includes data visualization tools to help you understand your data before sonifying it.
 
+Currently it's assumed that the X will be time (or analogous), and the Y will be the data to sonify.
+
 ![Dashboard Screenshot](static/screenshot_viz.png)
 
+## Hosted Dashboard
 
-
+The dashboard is hosted on Streamlit Cloud at https://xy-sonification.streamlit.app/
 
 ## Installation and Running
 
-### Option 1: Using Docker (Recommended)
+<details>
+<summary>Option 1: Using Docker (Recommended)</summary>
 
 Prerequisites:
 - Docker installed on your system
@@ -32,8 +36,8 @@ Steps:
 
 1. Clone this repository:
    ```bash
-   git clone https://github.com/yourusername/rabi-oscillation-sonification.git
-   cd rabi-oscillation-sonification
+   git clone https://github.com/rorads/xy-sonification.git
+   cd xy-sonification
    ```
 
 2. Build and run the Docker container:
@@ -55,7 +59,10 @@ make stop     # Stop and remove the container
 make clean    # Remove container and image
 ```
 
-### Option 2: Running Directly with Streamlit
+</details>
+
+<details>
+<summary>Option 2: Running Directly with Streamlit</summary>
 
 Prerequisites:
 - Python 3.12+
@@ -65,8 +72,8 @@ Steps:
 
 1. Clone this repository:
    ```bash
-   git clone https://github.com/yourusername/rabi-oscillation-sonification.git
-   cd rabi-oscillation-sonification
+   git clone https://github.com/rorads/xy-sonification.git
+   cd xy-sonification
    ```
 
 2. Create and activate a virtual environment:
@@ -89,6 +96,8 @@ Steps:
    ```
    http://localhost:8501
    ```
+
+</details>
 
 ## Usage
 
