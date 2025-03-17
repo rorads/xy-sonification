@@ -365,8 +365,24 @@ def main():
     )
 
     st.markdown("""
-    > **Note:** The default data has been set to `fig3b_multilevel.csv`. Uncheck to upload your own data.
-    > the data is of the following format:
+    ## How to Use This Dashboard
+
+    1. **Data Input**: 
+       - By default, the dashboard uses the `fig3b_multilevel.csv` dataset
+       - To use your own data, uncheck the "Use default data" option in the sidebar and upload a CSV file
+
+    2. **Navigation**:
+       - Use the sidebar to switch between "Data Exploration" and "Sonification" pages
+       - The Data Exploration tab shows statistics and visualizations of your data
+       - The Sonification tab lets you convert your data to sound
+
+    3. **Sonification**:
+       - Select a sonification method from the sidebar (Sine Wave, FM Synthesis, etc.)
+       - Adjust parameters to customize the sound
+       - Click "Generate" to create and play the audio
+       - Download the generated audio file using the download button
+
+    > **Note:** Your CSV data should have at least two columns in this format:
     >
     > ```csv
     > microseconds, optical_contrast
