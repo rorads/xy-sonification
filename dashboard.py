@@ -364,34 +364,6 @@ def main():
         "This dashboard allows you to explore different ways of converting data to sound."
     )
 
-    st.markdown("""
-    ## How to Use This Dashboard
-
-    1. **Data Input**: 
-       - By default, the dashboard uses the `fig3b_multilevel.csv` dataset
-       - To use your own data, uncheck the "Use default data" option in the sidebar and upload a CSV file
-
-    2. **Navigation**:
-       - Use the sidebar to switch between "Data Exploration" and "Sonification" pages
-       - The Data Exploration tab shows statistics and visualizations of your data
-       - The Sonification tab lets you convert your data to sound
-
-    3. **Sonification**:
-       - Select a sonification method from the sidebar (Sine Wave, FM Synthesis, etc.)
-       - Adjust parameters to customize the sound
-       - Click "Generate" to create and play the audio
-       - Download the generated audio file using the download button
-
-    > **Note:** Your CSV data should have at least two columns in this format:
-    >
-    > ```csv
-    > microseconds, optical_contrast
-    > 1.500000000000000118e-02, -4.925499858765510774e-01
-    > 1.750000000000000167e-02, -4.933005565083004584e-01
-    > 2.000000000000000042e-02, -6.617802563678457650e-01
-    > ```
-    """)
-
     # Sidebar for file upload and strategy selection
     st.sidebar.header("Configuration")
 
@@ -425,6 +397,10 @@ def main():
             df = None
             csv_file = None
 
+    # Replace radio button with selectbox for more traditional navigation
+    st.sidebar.header("Navigation")
+    page = st.sidebar.selectbox("Select page", ["How to...", "Data Exploration", "Sonification"])
+
     # Proceed only if data is available
     if df is not None:
         x_vals, y_vals = extract_columns(df)
@@ -433,13 +409,38 @@ def main():
             st.error("Could not extract valid numerical data from the CSV file.")
             return
 
-        # Replace radio button with selectbox for more traditional navigation
-        st.sidebar.header("Navigation")
-        page = st.sidebar.selectbox("Select page", ["Data Exploration", "Sonification"])
+        # Display instructions in "How to..." page
+        if page == "How to...":
+            st.markdown("""
+            ## How to Use This Dashboard
 
+            1. **Data Input**: 
+               - By default, the dashboard uses the `fig3b_multilevel.csv` dataset
+               - To use your own data, uncheck the "Use default data" option in the sidebar and upload a CSV file
+
+            2. **Navigation**:
+               - Use the sidebar to switch between "Data Exploration" and "Sonification" pages
+               - The Data Exploration tab shows statistics and visualizations of your data
+               - The Sonification tab lets you convert your data to sound
+
+            3. **Sonification**:
+               - Select a sonification method from the sidebar (Sine Wave, FM Synthesis, etc.)
+               - Adjust parameters to customize the sound
+               - Click "Generate" to create and play the audio
+               - Download the generated audio file using the download button
+
+            > **Note:** Your CSV data should have at least two columns in this format:
+            >
+            > ```csv
+            > microseconds, optical_contrast
+            > 1.500000000000000118e-02, -4.925499858765510774e-01
+            > 1.750000000000000167e-02, -4.933005565083004584e-01
+            > 2.000000000000000042e-02, -6.617802563678457650e-01
+            > ```
+            """)
 
         # Display basic data stats
-        if page == "Data Exploration":
+        elif page == "Data Exploration":
             st.subheader("Data Statistics and preview")
             # Display data statistics as bullet points
             st.markdown(f"""
