@@ -421,6 +421,14 @@ def main():
         st.sidebar.header("Navigation")
         page = st.sidebar.selectbox("Select page", ["Data Exploration", "Sonification"])
 
+        st.sidebar.header("About")
+
+        st.sidebar.markdown("""
+        ## About
+        This dashboard is a simple tool to help you explore different ways of converting data to sound. 
+        It was written by [Rory Scott](https://github.com/rorads).
+        """)
+
         # Display basic data stats
         if page == "Data Exploration":
             st.subheader("Data Statistics and preview")
@@ -504,21 +512,35 @@ def main():
                         0.05,
                         0.01,
                         key="sine_duration",
+                        help="Controls how long each data point sounds. Shorter durations create more staccato sounds, while longer durations create smoother transitions."
                     )
                     sine_min_freq = st.slider(
-                        "Minimum Frequency (Hz)", 50, 500, 220, 10, key="sine_min_freq"
+                        "Minimum Frequency (Hz)", 
+                        50, 
+                        500, 
+                        220, 
+                        10, 
+                        key="sine_min_freq",
+                        help="The lowest frequency that will be used in the sonification. 220 Hz is approximately A3 on a piano."
                     )
                 with col2:
                     sine_max_freq = st.slider(
                         "Maximum Frequency (Hz)",
-                        500,
+                        200,
                         2000,
                         880,
                         50,
                         key="sine_max_freq",
+                        help="The highest frequency that will be used in the sonification. 880 Hz is approximately A5 on a piano."
                     )
                     sine_amplitude = st.slider(
-                        "Amplitude Scale", 0.1, 1.0, 0.8, 0.1, key="sine_amplitude"
+                        "Amplitude Scale", 
+                        0.1, 
+                        1.0, 
+                        0.8, 
+                        0.1, 
+                        key="sine_amplitude",
+                        help="Controls the volume of the sound. Higher values create louder sounds."
                     )
 
                 # Generate audio
@@ -565,16 +587,35 @@ def main():
                         0.05,
                         0.01,
                         key="fm_duration",
+                        help="Controls how long each data point sounds. Shorter durations create more percussive sounds, while longer durations allow hearing the modulation effects more clearly."
                     )
                     fm_carrier = st.slider(
-                        "Carrier Frequency (Hz)", 100, 1000, 440, 20, key="fm_carrier"
+                        "Carrier Frequency (Hz)", 
+                        100, 
+                        1000, 
+                        440, 
+                        20, 
+                        key="fm_carrier",
+                        help="The base frequency that gets modulated. This is the primary pitch you hear. 440 Hz is A4 (concert A)."
                     )
                 with col2:
                     fm_mod_min = st.slider(
-                        "Min Modulation Index", 0.1, 5.0, 1.0, 0.1, key="fm_mod_min"
+                        "Min Modulation Index", 
+                        0.1, 
+                        5.0, 
+                        1.0, 
+                        0.1, 
+                        key="fm_mod_min",
+                        help="The minimum amount of frequency modulation. Lower values create more subtle timbral variations."
                     )
                     fm_mod_max = st.slider(
-                        "Max Modulation Index", 1.0, 10.0, 5.0, 0.5, key="fm_mod_max"
+                        "Max Modulation Index", 
+                        1.0, 
+                        10.0, 
+                        5.0, 
+                        0.5, 
+                        key="fm_mod_max",
+                        help="The maximum amount of frequency modulation. Higher values create more dramatic timbral changes and complex sounds."
                     )
 
                 # Generate audio
@@ -621,10 +662,17 @@ def main():
                         0.02,
                         0.005,
                         key="grain_size",
+                        help="Controls the duration of each sound 'grain'. Smaller grains create more textural, cloud-like sounds. Larger grains create more distinct, recognizable tones."
                     )
                 with col2:
                     grain_density = st.slider(
-                        "Grain Density", 0.1, 1.0, 0.5, 0.1, key="grain_density"
+                        "Grain Density", 
+                        0.1, 
+                        1.0, 
+                        0.5, 
+                        0.1, 
+                        key="grain_density",
+                        help="Controls how much the grains overlap. Higher values create denser, more continuous textures. Lower values create more sparse, distinct grains."
                     )
 
                 # Generate audio
@@ -670,13 +718,26 @@ def main():
                         0.05,
                         0.01,
                         key="harmonic_duration",
+                        help="Controls how long each data point sounds. Longer durations allow better perception of the harmonic content."
                     )
                     harmonic_base = st.slider(
-                        "Base Frequency (Hz)", 50, 440, 110, 10, key="harmonic_base"
+                        "Base Frequency (Hz)", 
+                        50, 
+                        440, 
+                        110, 
+                        10, 
+                        key="harmonic_base",
+                        help="The fundamental frequency upon which harmonics are built. 110 Hz is approximately A2 on a piano."
                     )
                 with col2:
                     harmonic_count = st.slider(
-                        "Number of Harmonics", 2, 16, 8, 1, key="harmonic_count"
+                        "Number of Harmonics", 
+                        2, 
+                        16, 
+                        8, 
+                        1, 
+                        key="harmonic_count",
+                        help="Controls how many harmonic overtones are included. More harmonics create richer, more complex timbres. Fewer harmonics create simpler, purer sounds."
                     )
 
                 # Generate audio
@@ -726,6 +787,7 @@ def main():
                         0.05,
                         0.01,
                         key="distance_duration",
+                        help="Controls how long each data point sounds. Shorter durations emphasize rapid changes in the data."
                     )
                     distance_min_freq = st.slider(
                         "Minimum Frequency (Hz)",
@@ -734,6 +796,7 @@ def main():
                         110,
                         10,
                         key="distance_min_freq",
+                        help="The frequency used for the smallest distances between data points. 110 Hz is approximately A2 on a piano."
                     )
                 with col2:
                     distance_max_freq = st.slider(
@@ -743,6 +806,7 @@ def main():
                         1760,
                         50,
                         key="distance_max_freq",
+                        help="The frequency used for the largest distances between data points. 1760 Hz is approximately A6 on a piano."
                     )
 
                 # Generate audio
