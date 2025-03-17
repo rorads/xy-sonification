@@ -421,13 +421,6 @@ def main():
         st.sidebar.header("Navigation")
         page = st.sidebar.selectbox("Select page", ["Data Exploration", "Sonification"])
 
-        st.sidebar.header("About")
-
-        st.sidebar.markdown("""
-        ## About
-        This dashboard is a simple tool to help you explore different ways of converting data to sound. 
-        It was written by [Rory Scott](https://github.com/rorads).
-        """)
 
         # Display basic data stats
         if page == "Data Exploration":
@@ -791,7 +784,7 @@ def main():
                     )
                     distance_min_freq = st.slider(
                         "Minimum Frequency (Hz)",
-                        50,
+                        20,
                         500,
                         110,
                         10,
@@ -801,7 +794,7 @@ def main():
                 with col2:
                     distance_max_freq = st.slider(
                         "Maximum Frequency (Hz)",
-                        500,
+                        50,
                         2000,
                         1760,
                         50,
@@ -839,6 +832,13 @@ def main():
                             ),
                             unsafe_allow_html=True,
                         )
+
+        st.sidebar.header("About")
+
+        st.sidebar.markdown("""
+        This dashboard is a simple tool to help you explore different ways of converting data to sound. 
+        It was written by [Rory Scott](https://github.com/rorads).
+        """)
 
     # Footer
     st.markdown("---")
