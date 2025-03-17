@@ -601,7 +601,7 @@ def main():
                     )
                     fm_carrier = st.slider(
                         "Carrier Frequency (Hz)", 
-                        100, 
+                        20, 
                         1000, 
                         440, 
                         20, 
