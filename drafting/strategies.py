@@ -21,31 +21,29 @@ def sine_strategy(data, sample_rate=44100, tone_duration=0.5):
     """
     samples = []
     max_amplitude = 32767 * 0.7  # 70% of maximum 16-bit amplitude to avoid distortion
+    min_amplitude = max_amplitude * 0.2  # Minimum amplitude to ensure audibility
     
     # Process each data point as a discrete tone
-    for x, y in data:
+    for y, x in data:
         # Map x to frequency (Hz): higher x = higher pitch
         # Base frequency of 200Hz + scaling factor creates audible range
-        frequency = 200 + x * 5  # arbitrary mapping
+        frequency = 200 + x * 50  # arbitrary mapping
         
-        # Map y to amplitude (volume): use absolute value to ensure sound
-        # Instead of clamping, use a percentage of max_amplitude
-        amplitude = max_amplitude * 0.5 * (1 + np.tanh(y))  # Maps any y to range [0-1]
+        # Map y to amplitude (volume) with a guaranteed minimum
+        # This ensures sound is always produced
+        amplitude_factor = 0.5 * (1 + np.tanh(y))  # Maps to [0-1] range
+        amplitude = min_amplitude + (max_amplitude - min_amplitude) * amplitude_factor
         
         # Create time axis for this tone segment
-        # Represents evenly spaced time points for the duration
         t = np.linspace(
             0, tone_duration, int(sample_rate * tone_duration), endpoint=False
         )
         
-        # Generate sine wave for this tone:
-        # 2π * frequency * time = phase angle in radians
-        # sine of this angle * amplitude = waveform
+        # Generate sine wave for this tone
         tone = amplitude * np.sin(2 * np.pi * frequency * t)
         samples.append(tone)
     
     # Join all tone segments into continuous audio stream
-    # Empty data returns empty array (no sound)
     return np.concatenate(samples) if samples else np.array([])
 
 
@@ -115,32 +113,28 @@ def chord_strategy(data, sample_rate=44100, tone_duration=0.5):
     """
     samples = []
     max_amplitude = 32767 * 0.7  # 70% of maximum 16-bit amplitude
+    min_amplitude = max_amplitude * 0.2  # Minimum amplitude to ensure audibility
     
     # Process each data point as a three-tone chord
     for x, y in data:
         # Map x to the central frequency (Hz)
         frequency = 200 + x * 5
         
-        # Map y to amplitude (volume) using tanh to handle any range of y values
-        amplitude = max_amplitude * 0.5 * (1 + np.tanh(y))
+        # Map y to amplitude (volume) with a guaranteed minimum
+        amplitude_factor = 0.5 * (1 + np.tanh(y))  # Maps to [0-1] range
+        amplitude = min_amplitude + (max_amplitude - min_amplitude) * amplitude_factor
         
         # Create time axis for this chord segment
         t = np.linspace(
             0, tone_duration, int(sample_rate * tone_duration), endpoint=False
         )
         
-        # Generate three separate tones with related frequencies:
-        # 1. Central frequency as mapped from x
+        # Generate three separate tones with related frequencies
         tone1 = amplitude * np.sin(2 * np.pi * frequency * t)
-        
-        # 2. Slightly higher pitch (creates harmonic content)
         tone2 = amplitude * np.sin(2 * np.pi * (frequency + 20) * t)
-        
-        # 3. Slightly lower pitch (creates harmonic content)
         tone3 = amplitude * np.sin(2 * np.pi * (frequency - 20) * t)
         
         # Mix the three tones together
-        # Division by 3 prevents clipping from combined amplitude
         tone = (tone1 + tone2 + tone3) / 3
         samples.append(tone)
     

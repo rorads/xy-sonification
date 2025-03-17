@@ -99,53 +99,62 @@ from strategies import STRATEGY_MAP, generate_audio_file
 for strategy_name in STRATEGY_MAP.keys():
     output_file = os.path.join(output_directory, f"{strategy_name}.wav")
     generate_audio_file(csv_file, strategy_name=strategy_name, output_file=output_file)
-
+    print(f"Generated audio using {strategy_name} strategy")
 
 # %%
 import IPython.display as ipd
 import wave
 import numpy as np
 
-# Path to the sine wave audio file
-wave_path = os.path.join(output_directory, "sine.wav")
-
-# Open and display the sine wave audio
-with wave.open(wave_path, 'rb') as wf:
-    # Get basic info about the wave file
-    n_channels = wf.getnchannels()
-    sample_width = wf.getsampwidth()
-    framerate = wf.getframerate()
-    n_frames = wf.getnframes()
+# Display audio information and player for each strategy
+for strategy_name in STRATEGY_MAP.keys():
+    wave_path = os.path.join(output_directory, f"{strategy_name}.wav")
     
-    # Print audio file information
-    print(f"Channels: {n_channels}")
-    print(f"Sample Width: {sample_width} bytes")
-    print(f"Frame Rate: {framerate} Hz")
-    print(f"Number of Frames: {n_frames}")
-    print(f"Duration: {n_frames / framerate:.2f} seconds")
-
-# Display audio player in the notebook
-ipd.Audio(wave_path)
-
+    # Open and display basic info about the wave file
+    with wave.open(wave_path, 'rb') as wf:
+        n_channels = wf.getnchannels()
+        sample_width = wf.getsampwidth()
+        framerate = wf.getframerate()
+        n_frames = wf.getnframes()
+        
+        # Print audio file information
+        print(f"\n--- {strategy_name.upper()} STRATEGY ---")
+        print(f"Channels: {n_channels}")
+        print(f"Sample Width: {sample_width} bytes")
+        print(f"Frame Rate: {framerate} Hz")
+        print(f"Number of Frames: {n_frames}")
+        print(f"Duration: {n_frames / framerate:.2f} seconds")
+    
+    # Display audio player in the notebook
+    print(f"Audio player for {strategy_name} strategy:")
+    display(ipd.Audio(wave_path))
 
 # %%
 from visualize import plot_spectogram_of_generated_audio
 import matplotlib.pyplot as plt
+from IPython.display import display
 
-# Generate spectogram for the phase modulation audio file
-plot_spectogram_of_generated_audio(wave_path, output_directory)
+# Display spectrogram for each strategy audio file
+for strategy_name in STRATEGY_MAP.keys():
+    print(f"\n--- {strategy_name.upper()} STRATEGY SPECTROGRAM ---")
+    wave_path = os.path.join(output_directory, f"{strategy_name}.wav")
+    # Generate the spectrogram
+    plot_spectogram_of_generated_audio(wave_path, output_directory)
+    
+    # Display the spectrogram in the notebook
+    spectogram_path = os.path.join(output_directory, 'spectogram.png')
+    plt.figure(figsize=(10, 6))
+    img = plt.imread(spectogram_path)
+    plt.imshow(img)
+    plt.axis('off')
+    plt.title(f'Spectrogram of {strategy_name} Strategy Audio')
+    plt.tight_layout()
+    display(plt.gcf())
+    plt.close()
 
-# Display the spectogram in the notebook
-spectogram_path = os.path.join(output_directory, 'spectogram.png')
-plt.figure(figsize=(10, 6))
-img = plt.imread(spectogram_path)
-plt.imshow(img)
-plt.axis('off')
-plt.title(f'Spectogram of {wave_path} Audio')
-plt.show()
+
+
+
 
 
 # %%
-
-
-
