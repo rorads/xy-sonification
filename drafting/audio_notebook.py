@@ -23,7 +23,6 @@ df.head()
 
 # %%
 import polars as pl
-import numpy as np
 
 # Calculate the Euclidean distance between consecutive points in 2D space
 # For the first value, we'll use 0 as there's no previous point to compare with
@@ -41,7 +40,6 @@ df_with_dist.head(10)
 
 # %%
 import matplotlib.pyplot as plt
-from visualize import plot_data
 
 # Create a figure with subplots in a grid layout
 plt.figure(figsize=(15, 10))
@@ -104,7 +102,6 @@ for strategy_name in STRATEGY_MAP.keys():
 # %%
 import IPython.display as ipd
 import wave
-import numpy as np
 
 # Display audio information and player for each strategy
 for strategy_name in STRATEGY_MAP.keys():

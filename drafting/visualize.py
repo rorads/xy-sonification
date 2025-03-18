@@ -3,7 +3,6 @@
 import argparse
 import os
 import matplotlib.pyplot as plt
-import polars as pl
 import soundfile as sf
 
 from utils import read_csv_data
