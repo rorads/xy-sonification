@@ -364,7 +364,7 @@ def main():
         "This dashboard allows you to explore different ways of converting data to sound."
     )
 
-    # Sidebar for file upload and strategy selection
+    # Sidebar for file upload and navigation
     st.sidebar.header("Configuration")
 
     # Default data path
@@ -397,9 +397,9 @@ def main():
             df = None
             csv_file = None
 
-    # Replace radio button with selectbox for more traditional navigation
+    # Navigation in sidebar - simplified to About and How To...
     st.sidebar.header("Navigation")
-    page = st.sidebar.selectbox("Select page", ["How to...", "Data Exploration", "Sonification"])
+    page = st.sidebar.radio("Go to page", ["Sonification", "Data Exploration", "How to..."])
 
     # Proceed only if data is available
     if df is not None:
@@ -419,12 +419,12 @@ def main():
                - To use your own data, uncheck the "Use default data" option in the sidebar and upload a CSV file
 
             2. **Navigation**:
-               - Use the sidebar to switch between "Data Exploration" and "Sonification" pages
+               - Use the sidebar to switch between pages
                - The Data Exploration tab shows statistics and visualizations of your data
-               - The Sonification tab lets you convert your data to sound
+               - The Sonification page lets you convert your data to sound using different methods
 
             3. **Sonification**:
-               - Select a sonification method from the sidebar (Sine Wave, FM Synthesis, etc.)
+               - Select a sonification method from the tabs at the top of the page
                - Adjust parameters to customize the sound
                - Click "Generate" to create and play the audio
                - Download the generated audio file using the download button
@@ -488,25 +488,21 @@ def main():
                 ax.grid(True)
                 st.pyplot(fig)
 
-        # Sonification page
-        elif page == "Sonification":
-            st.subheader("Sonification")
+        # Sonification page (now the default)
+        else:  # page == "Sonification"
+            st.subheader("Data Sonification")
+            
+            # Create tabs for each sonification method at the top of the screen
+            sonification_tabs = st.tabs([
+                "Sine Wave", 
+                "FM Synthesis",
+                "Granular Synthesis",
+                "Harmonic Mapping",
+                "Euclidean Distance"
+            ])
 
-            # Add sonification method selection to sidebar when on sonification page
-            st.sidebar.subheader("Sonification Method")
-            sonification_method = st.sidebar.selectbox(
-                "Select method",
-                [
-                    "Sine Wave",
-                    "FM Synthesis",
-                    "Granular Synthesis",
-                    "Harmonic Mapping",
-                    "Euclidean Distance",
-                ],
-            )
-
-            # Display the selected sonification method
-            if sonification_method == "Sine Wave":
+            # Sine Wave tab
+            with sonification_tabs[0]:
                 st.markdown("### Sine Wave Sonification")
                 st.write(
                     "Maps the data to simple sine wave tones. Y values control frequency."
@@ -581,7 +577,8 @@ def main():
                             unsafe_allow_html=True,
                         )
 
-            elif sonification_method == "FM Synthesis":
+            # FM Synthesis tab
+            with sonification_tabs[1]:
                 st.markdown("### FM Synthesis Sonification")
                 st.write(
                     "Uses frequency modulation to create more complex sounds. Y values control modulation index."
@@ -656,7 +653,8 @@ def main():
                             unsafe_allow_html=True,
                         )
 
-            elif sonification_method == "Granular Synthesis":
+            # Granular Synthesis tab
+            with sonification_tabs[2]:
                 st.markdown("### Granular Synthesis Sonification")
                 st.write(
                     "Creates small sound 'grains' from the data, creating textural sounds. Y values control frequency of grains."
@@ -712,7 +710,8 @@ def main():
                             unsafe_allow_html=True,
                         )
 
-            elif sonification_method == "Harmonic Mapping":
+            # Harmonic Mapping tab
+            with sonification_tabs[3]:
                 st.markdown("### Harmonic Mapping Sonification")
                 st.write(
                     "Maps data to harmonic content, creating rich timbral variations. Y values control harmonic distribution."
@@ -781,7 +780,8 @@ def main():
                             unsafe_allow_html=True,
                         )
 
-            elif sonification_method == "Euclidean Distance":
+            # Euclidean Distance tab
+            with sonification_tabs[4]:
                 st.markdown("### Euclidean Distance Sonification")
                 st.write(
                     "Sonifies the distance between consecutive data points. Larger jumps create higher frequencies."
@@ -850,21 +850,16 @@ def main():
                             unsafe_allow_html=True,
                         )
 
-        st.sidebar.header("About")
-
-        st.sidebar.markdown("""
-        This dashboard is a simple tool to help you explore different ways of converting data to sound. 
-        It was written by [Rory Scott](https://github.com/rorads).
-        """)
-
-    # Footer
-    st.markdown("---")
-    st.markdown("### About")
-    st.write(
-        "This dashboard allows you to explore different methods of sonifying scientific data, "
-        "specifically focusing on Rabi oscillation patterns. Each sonification strategy highlights "
-        "different aspects of the data through sound."
-    )
+    # About section moved to the sidebar
+    st.sidebar.header("About")
+    st.sidebar.markdown("""
+    This dashboard is a simple tool to help you explore different ways of converting data to sound. 
+    It allows you to explore different methods of sonifying scientific data,
+    specifically focusing on Rabi oscillation patterns. Each sonification strategy highlights
+    different aspects of the data through sound.
+    
+    It was created by [Rory Scott](https://github.com/rorads).
+    """)
 
 
 if __name__ == "__main__":
