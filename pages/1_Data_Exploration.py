@@ -11,7 +11,9 @@ import os
 
 # Set page config
 st.set_page_config(
-    page_title="Data Exploration - Sonification Dashboard", page_icon="📊", layout="wide"
+    page_title="Data Exploration - Sonification Dashboard", 
+    page_icon="📊", 
+    layout="wide"
 )
 
 # Utility functions (copied from main dashboard)
@@ -87,7 +89,6 @@ def main():
 
     # Navigation links in sidebar
     st.sidebar.header("Navigation")
-    st.sidebar.markdown("[Sonification](/) | [Data Exploration](/Data_Exploration) | [How to...](/How_to)")
 
     # Proceed only if data is available
     if df is not None:

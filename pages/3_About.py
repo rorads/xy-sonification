@@ -2,7 +2,9 @@ import streamlit as st
 
 # Set page config
 st.set_page_config(
-    page_title="About - Sonification Dashboard", page_icon="ℹ️", layout="wide"
+    page_title="About - Sonification Dashboard", 
+    page_icon="ℹ️", 
+    layout="wide"
 )
 
 # Main app
@@ -11,7 +13,6 @@ def main():
     
     # Navigation links in sidebar
     st.sidebar.header("Navigation")
-    st.sidebar.markdown("[Sonification](/) | [Data Exploration](/Data_Exploration) | [How to...](/How_to) | [About](/About)")
 
     # About content
     st.markdown("""

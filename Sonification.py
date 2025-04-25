@@ -11,7 +11,10 @@ import os
 
 # Set page config
 st.set_page_config(
-    page_title="Data Sonification Dashboard", page_icon="🔊", layout="wide"
+    page_title="Data Sonification Dashboard", 
+    page_icon="🔊", 
+    layout="wide",
+    initial_sidebar_state="collapsed"
 )
 
 
@@ -399,7 +402,6 @@ def main():
 
     # Navigation links in sidebar
     st.sidebar.header("Navigation")
-    st.sidebar.markdown("[Sonification](/) | [Data Exploration](/Data_Exploration) | [How to...](/How_to) | [About](/About)")
 
     # Proceed only if data is available
     if df is not None:
