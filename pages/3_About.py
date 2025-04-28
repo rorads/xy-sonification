@@ -36,7 +36,8 @@ def main():
     
     ### Developed by
     
-    This tool was created by [Rory Scott](https://github.com/rorads).
+    This tool was created by [Rory Scott](https://github.com/rorads), as part of 'Quantum 
+    Playground'. More details of which can be found [here](https://qntm-exhib.vercel.app/).
     
     ### Contact and Feedback
     
