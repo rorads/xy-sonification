@@ -17,6 +17,28 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
+# Add custom CSS for audio player styling
+st.markdown("""
+<style>
+audio::-webkit-media-controls-panel,
+audio::-webkit-media-controls-enclosure {
+    background-color: #3f8f54;  /* Pastel green background */
+}
+
+audio::-webkit-media-controls-time-remaining-display,
+audio::-webkit-media-controls-current-time-display {
+    color: #000000;  /* Black text */
+    text-shadow: none;
+}
+
+audio::-webkit-media-controls-timeline {
+    background-color: #80ba90;  /* Lighter pastel green */
+    border-radius: 25px;
+    margin-left: 10px;
+    margin-right: 10px;
+}
+</style>
+""", unsafe_allow_html=True)
 
 # Utility functions
 def read_csv_data(csv_file):
