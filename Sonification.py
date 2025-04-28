@@ -364,8 +364,15 @@ def euclidean_distance_strategy(
 def main():
     st.title("Data Sonification Dashboard")
     st.write(
-        "This dashboard allows you to explore different ways of converting data to sound."
+        "These sounds trace Rabi oscillations in the pentacene triplet level, following microsecond-scale " + 
+        "swings in optical contrast as the molecule’s spin state coherently flips between ground and excited " + 
+        "triplet configurations. Through bespoke sonification techniques, those quantum pulses become immersive " + 
+        "soundscapes—audible echoes of invisible oscillations—that invite listeners to feel the hidden rhythm of " + 
+        "light–matter interaction in this exhibition."
     )
+    st.write("There is no way for a human to ever hear these oscillations, but through sonification, we can make " + 
+             "them audible. Moving from Sine Wave through to Euclidean Distance, we can increase the complexity and " + 
+             "abstractness of the sound we hear.")
 
     # Sidebar for file upload and configuration
     st.sidebar.header("Configuration")
