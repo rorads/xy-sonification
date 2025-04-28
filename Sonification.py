@@ -11,8 +11,8 @@ import os
 
 # Set page config
 st.set_page_config(
-    page_title="Data Sonification Dashboard", 
-    page_icon="🔊", 
+    page_title="Data Sonification Playground", 
+    page_icon="🔊",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
@@ -362,17 +362,14 @@ def euclidean_distance_strategy(
 
 # Main app
 def main():
-    st.title("Data Sonification Dashboard")
-    st.write(
-        "These sounds trace Rabi oscillations in the pentacene triplet level, following microsecond-scale " + 
-        "swings in optical contrast as the molecule’s spin state coherently flips between ground and excited " + 
-        "triplet configurations. Through bespoke sonification techniques, those quantum pulses become immersive " + 
-        "soundscapes—audible echoes of invisible oscillations—that invite listeners to feel the hidden rhythm of " + 
-        "light–matter interaction in this exhibition."
-    )
-    st.write("There is no way for a human to ever hear these oscillations, but through sonification, we can make " + 
-             "them audible. Moving from Sine Wave through to Euclidean Distance, we can increase the complexity and " + 
-             "abstractness of the sound we hear.")
+    st.title("Data Sonification Playground")
+    
+    with st.expander("About this Exhibition", expanded=False):
+        st.write("There is no way for a human to ever hear quantum oscillations directly, but through sonification, we can make them audible. Moving from Sine Wave through to Euclidean Distance, we can increase the complexity and abstractness of the sound we hear.")
+
+        st.write("The Data Sonification Playground is an interactive web application that transforms quantum data into sound. Built using Python and Streamlit, it allows users to explore different sonification techniques and parameters in real-time, creating a bridge between quantum physics and auditory experience.")
+
+        st.write("These sounds trace Rabi oscillations in the pentacene triplet level, following microsecond-scale swings in optical contrast as the molecule's spin state coherently flips between ground and excited triplet configurations. Through bespoke sonification techniques, those quantum pulses become immersive soundscapes—audible echoes of invisible oscillations—that invite listeners to feel the hidden rhythm of light–matter interaction in this exhibition.")
 
     # Sidebar for file upload and configuration
     st.sidebar.header("Configuration")
@@ -493,7 +490,7 @@ def main():
                 st.audio(sine_audio.astype(np.int16), sample_rate=22050)
 
                 # Display spectrogram
-                st.write("Spectrogram:")
+                st.write("#### Spectrogram")
                 spectrogram_fig = create_spectrogram(sine_audio, 22050)
                 st.pyplot(spectrogram_fig)
 
