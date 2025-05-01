@@ -542,8 +542,17 @@ def main():
         st.subheader("Current Audio")
         
         # Create two columns with the requested ratio (2/3 and 1/3)
-        player_col, spectro_col = st.columns([2, 1])
+        spectro_col, player_col = st.columns([1, 3], vertical_alignment="center")
         
+        with spectro_col:
+            if st.session_state.current_audio is not None and 'current_spectrogram' in st.session_state:
+                st.pyplot(st.session_state.current_spectrogram)
+                # Display caption showing which strategy is currently playing
+                if st.session_state.current_strategy:
+                    st.caption(f"Currently playing: {st.session_state.current_strategy}")
+            else:
+                st.info("Spectrogram will appear here")
+
         with player_col:
             if st.session_state.current_audio is not None:
                 # Display the audio player
@@ -562,14 +571,7 @@ def main():
             else:
                 st.info("Select a sonification method below and click 'Load Audio' to play and visualize the sound.")
                 
-        with spectro_col:
-            if st.session_state.current_audio is not None and 'current_spectrogram' in st.session_state:
-                st.pyplot(st.session_state.current_spectrogram)
-                # Display caption showing which strategy is currently playing
-                if st.session_state.current_strategy:
-                    st.caption(f"Currently playing: {st.session_state.current_strategy}")
-            else:
-                st.info("Spectrogram will appear here")
+    
         
         st.markdown("---")
         
@@ -588,7 +590,7 @@ def main():
             st.write("Maps the data to simple sine wave tones. Y values control frequency.")
 
             # Create two main columns - left for controls, right for spectrogram
-            main_col1, main_col2 = st.columns([1, 2])
+            main_col1, main_col2 = st.columns([1, 2], vertical_alignment="center")
 
             with main_col1:
                 # Parameters in a single column
@@ -656,7 +658,7 @@ def main():
             st.write("Uses frequency modulation to create more complex sounds. Y values control modulation index.")
 
             # Create two main columns - left for controls, right for spectrogram
-            main_col1, main_col2 = st.columns([1, 2])
+            main_col1, main_col2 = st.columns([1, 2], vertical_alignment="center")
 
             with main_col1:
                 # Parameters in a single column
@@ -724,7 +726,7 @@ def main():
             st.write("Creates small sound 'grains' from the data, creating textural sounds. Y values control frequency of grains.")
 
             # Create two main columns - left for controls, right for spectrogram
-            main_col1, main_col2 = st.columns([1, 2])
+            main_col1, main_col2 = st.columns([1, 2], vertical_alignment="center")
 
             with main_col1:
                 # Parameters in a single column
@@ -769,7 +771,7 @@ def main():
             st.write("Maps data to harmonic content, creating rich timbral variations. Y values control harmonic distribution.")
 
             # Create two main columns - left for controls, right for spectrogram
-            main_col1, main_col2 = st.columns([1, 2])
+            main_col1, main_col2 = st.columns([1, 2], vertical_alignment="center")
 
             with main_col1:
                 # Parameters in a single column
@@ -827,7 +829,7 @@ def main():
             st.write("Sonifies the distance between consecutive data points. Larger jumps create higher frequencies.")
 
             # Create two main columns - left for controls, right for spectrogram
-            main_col1, main_col2 = st.columns([1, 2])
+            main_col1, main_col2 = st.columns([1, 2], vertical_alignment="center")
 
             with main_col1:
                 # Parameters in a single column
