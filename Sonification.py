@@ -52,6 +52,18 @@ audio::-webkit-media-controls-timeline {
     height: 10px;  /* Increase slider handle height */
     width: 10px;   /* Increase slider handle width */
 }
+
+/* Style for the Play Audio buttons */
+.stButton button[data-baseweb="button"] {
+    background-color: #3f8f54;
+    color: white;
+    font-weight: bold;
+    width: 100%;
+    padding: 10px;
+}
+.stButton button[data-baseweb="button"]:hover {
+    background-color: #2a6e3a;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -401,6 +413,14 @@ def euclidean_distance_strategy(
 def main():
     st.title("Data Sonification Playground")
     
+    # Initialize session state for current audio
+    if 'current_audio' not in st.session_state:
+        st.session_state.current_audio = None
+    if 'current_audio_name' not in st.session_state:
+        st.session_state.current_audio_name = None
+    if 'current_audio_sample_rate' not in st.session_state:
+        st.session_state.current_audio_sample_rate = 22050
+    
     with st.expander("About this Exhibition", expanded=False):
         st.write("There is no way for a human to ever hear quantum oscillations directly, but through sonification, we can make them audible. Moving from Sine Wave through to Euclidean Distance, we can increase the complexity and abstractness of the sound we hear.")
 
@@ -463,6 +483,12 @@ def main():
             "Harmonic Mapping",
             "Euclidean Distance"
         ])
+        
+        # Function to update current audio
+        def update_audio(audio_data, name, sample_rate=22050):
+            st.session_state.current_audio = audio_data
+            st.session_state.current_audio_name = name
+            st.session_state.current_audio_sample_rate = sample_rate
 
         # Sine Wave tab
         with sonification_tabs[0]:
@@ -511,33 +537,36 @@ def main():
                     help="Controls the volume of the sound. Higher values create louder sounds."
                 )
 
-                # Generate audio automatically
-                with st.spinner("Generating audio..."):
-                    sine_audio = sine_wave_strategy(
-                        x_vals,
-                        y_vals,
-                        tone_duration=sine_duration,
-                        min_freq=sine_min_freq,
-                        max_freq=sine_max_freq,
-                        amplitude_scale=sine_amplitude,
-                    )
-
-                    # Display audio player
-                    st.audio(sine_audio.astype(np.int16), sample_rate=22050)
-
-                    # Download link
-                    st.markdown(
-                        get_download_link(
-                            sine_audio, 22050, "sine_wave_sonification.wav"
-                        ),
-                        unsafe_allow_html=True,
-                    )
+                # Generate audio when button is clicked
+                if st.button("▶️ Load Sine Wave Audio", use_container_width=True, type="primary"):
+                    with st.spinner("Generating audio..."):
+                        sine_audio = sine_wave_strategy(
+                            x_vals,
+                            y_vals,
+                            tone_duration=sine_duration,
+                            min_freq=sine_min_freq,
+                            max_freq=sine_max_freq,
+                            amplitude_scale=sine_amplitude,
+                        )
+                        update_audio(sine_audio, "sine_wave_sonification.wav")
+                        # Create spectrogram for the main audio player area
+                        spectrogram_fig = create_spectrogram(sine_audio, 22050)
+                        st.session_state.current_spectrogram = spectrogram_fig
 
             with main_col2:
-                # Display spectrogram
-                st.write("#### Spectrogram")
-                spectrogram_fig = create_spectrogram(sine_audio, 22050)
-                st.pyplot(spectrogram_fig)
+                # Display spectrogram for this sonification type
+                st.write("#### Spectrogram Preview")
+                # Generate audio silently to show spectrogram preview
+                preview_audio = sine_wave_strategy(
+                    x_vals,
+                    y_vals,
+                    tone_duration=sine_duration,
+                    min_freq=sine_min_freq,
+                    max_freq=sine_max_freq,
+                    amplitude_scale=sine_amplitude,
+                )
+                preview_fig = create_spectrogram(preview_audio, 22050)
+                st.pyplot(preview_fig)
 
         # FM Synthesis tab
         with sonification_tabs[1]:
@@ -586,33 +615,36 @@ def main():
                     help="The maximum amount of frequency modulation. Higher values create more dramatic timbral changes and complex sounds."
                 )
 
-                # Generate audio automatically
-                with st.spinner("Generating audio..."):
-                    fm_audio = fm_synthesis_strategy(
-                        x_vals,
-                        y_vals,
-                        tone_duration=fm_duration,
-                        carrier_freq=fm_carrier,
-                        mod_index_min=fm_mod_min,
-                        mod_index_max=fm_mod_max,
-                    )
-
-                    # Display audio player
-                    st.audio(fm_audio.astype(np.int16), sample_rate=22050)
-
-                    # Download link
-                    st.markdown(
-                        get_download_link(
-                            fm_audio, 22050, "fm_synthesis_sonification.wav"
-                        ),
-                        unsafe_allow_html=True,
-                    )
+                # Generate audio when button is clicked
+                if st.button("▶️ Load FM Synthesis Audio", use_container_width=True, type="primary"):
+                    with st.spinner("Generating audio..."):
+                        fm_audio = fm_synthesis_strategy(
+                            x_vals,
+                            y_vals,
+                            tone_duration=fm_duration,
+                            carrier_freq=fm_carrier,
+                            mod_index_min=fm_mod_min,
+                            mod_index_max=fm_mod_max,
+                        )
+                        update_audio(fm_audio, "fm_synthesis_sonification.wav")
+                        # Create spectrogram for the main audio player area
+                        spectrogram_fig = create_spectrogram(fm_audio, 22050)
+                        st.session_state.current_spectrogram = spectrogram_fig
 
             with main_col2:
-                # Display spectrogram
-                st.write("#### Spectrogram")
-                spectrogram_fig = create_spectrogram(fm_audio, 22050)
-                st.pyplot(spectrogram_fig)
+                # Display spectrogram for this sonification type
+                st.write("#### Spectrogram Preview")
+                # Generate audio silently to show spectrogram preview
+                preview_audio = fm_synthesis_strategy(
+                    x_vals,
+                    y_vals,
+                    tone_duration=fm_duration,
+                    carrier_freq=fm_carrier,
+                    mod_index_min=fm_mod_min,
+                    mod_index_max=fm_mod_max,
+                )
+                preview_fig = create_spectrogram(preview_audio, 22050)
+                st.pyplot(preview_fig)
 
         # Granular Synthesis tab
         with sonification_tabs[2]:
@@ -643,30 +675,26 @@ def main():
                     help="Controls how much the grains overlap. Higher values create denser, more continuous textures. Lower values create more sparse, distinct grains."
                 )
 
-                # Generate audio automatically
-                with st.spinner("Generating audio..."):
-                    granular_audio = granular_synthesis_strategy(
-                        x_vals, y_vals, grain_size=grain_size, density=grain_density
-                    )
-
-                    # Display audio player
-                    st.audio(granular_audio.astype(np.int16), sample_rate=22050)
-
-                    # Download link
-                    st.markdown(
-                        get_download_link(
-                            granular_audio,
-                            22050,
-                            "granular_synthesis_sonification.wav",
-                        ),
-                        unsafe_allow_html=True,
-                    )
+                # Generate audio when button is clicked
+                if st.button("▶️ Load Granular Synthesis Audio", use_container_width=True, type="primary"):
+                    with st.spinner("Generating audio..."):
+                        granular_audio = granular_synthesis_strategy(
+                            x_vals, y_vals, grain_size=grain_size, density=grain_density
+                        )
+                        update_audio(granular_audio, "granular_synthesis_sonification.wav")
+                        # Create spectrogram for the main audio player area
+                        spectrogram_fig = create_spectrogram(granular_audio, 22050)
+                        st.session_state.current_spectrogram = spectrogram_fig
 
             with main_col2:
-                # Display spectrogram
-                st.write("#### Spectrogram")
-                spectrogram_fig = create_spectrogram(granular_audio, 22050)
-                st.pyplot(spectrogram_fig)
+                # Display spectrogram for this sonification type
+                st.write("#### Spectrogram Preview")
+                # Generate audio silently to show spectrogram preview
+                preview_audio = granular_synthesis_strategy(
+                    x_vals, y_vals, grain_size=grain_size, density=grain_density
+                )
+                preview_fig = create_spectrogram(preview_audio, 22050)
+                st.pyplot(preview_fig)
 
         # Harmonic Mapping tab
         with sonification_tabs[3]:
@@ -706,34 +734,34 @@ def main():
                     help="Controls how many harmonic overtones are included. More harmonics create richer, more complex timbres."
                 )
 
-                # Generate audio automatically
-                with st.spinner("Generating audio..."):
-                    harmonic_audio = harmonic_mapping_strategy(
-                        x_vals,
-                        y_vals,
-                        tone_duration=harmonic_duration,
-                        base_freq=harmonic_base,
-                        num_harmonics=harmonic_count,
-                    )
-
-                    # Display audio player
-                    st.audio(harmonic_audio.astype(np.int16), sample_rate=22050)
-
-                    # Download link
-                    st.markdown(
-                        get_download_link(
-                            harmonic_audio,
-                            22050,
-                            "harmonic_mapping_sonification.wav",
-                        ),
-                        unsafe_allow_html=True,
-                    )
+                # Generate audio when button is clicked
+                if st.button("▶️ Load Harmonic Mapping Audio", use_container_width=True, type="primary"):
+                    with st.spinner("Generating audio..."):
+                        harmonic_audio = harmonic_mapping_strategy(
+                            x_vals,
+                            y_vals,
+                            tone_duration=harmonic_duration,
+                            base_freq=harmonic_base,
+                            num_harmonics=harmonic_count,
+                        )
+                        update_audio(harmonic_audio, "harmonic_mapping_sonification.wav")
+                        # Create spectrogram for the main audio player area
+                        spectrogram_fig = create_spectrogram(harmonic_audio, 22050)
+                        st.session_state.current_spectrogram = spectrogram_fig
 
             with main_col2:
-                # Display spectrogram
-                st.write("#### Spectrogram")
-                spectrogram_fig = create_spectrogram(harmonic_audio, 22050)
-                st.pyplot(spectrogram_fig)
+                # Display spectrogram for this sonification type
+                st.write("#### Spectrogram Preview")
+                # Generate audio silently to show spectrogram preview
+                preview_audio = harmonic_mapping_strategy(
+                    x_vals,
+                    y_vals,
+                    tone_duration=harmonic_duration,
+                    base_freq=harmonic_base,
+                    num_harmonics=harmonic_count,
+                )
+                preview_fig = create_spectrogram(preview_audio, 22050)
+                st.pyplot(preview_fig)
 
         # Euclidean Distance tab
         with sonification_tabs[4]:
@@ -773,34 +801,61 @@ def main():
                     help="The frequency used for the largest distances between data points. 1760 Hz is approximately A6 on a piano."
                 )
 
-                # Generate audio automatically
-                with st.spinner("Generating audio..."):
-                    distance_audio = euclidean_distance_strategy(
-                        x_vals,
-                        y_vals,
-                        tone_duration=distance_duration,
-                        min_freq=distance_min_freq,
-                        max_freq=distance_max_freq,
-                    )
-
-                    # Display audio player
-                    st.audio(distance_audio.astype(np.int16), sample_rate=22050)
-
-                    # Download link
-                    st.markdown(
-                        get_download_link(
-                            distance_audio,
-                            22050,
-                            "euclidean_distance_sonification.wav",
-                        ),
-                        unsafe_allow_html=True,
-                    )
+                # Generate audio when button is clicked
+                if st.button("▶️ Load Euclidean Distance Audio", use_container_width=True, type="primary"):
+                    with st.spinner("Generating audio..."):
+                        distance_audio = euclidean_distance_strategy(
+                            x_vals,
+                            y_vals,
+                            tone_duration=distance_duration,
+                            min_freq=distance_min_freq,
+                            max_freq=distance_max_freq,
+                        )
+                        update_audio(distance_audio, "euclidean_distance_sonification.wav")
+                        # Create spectrogram for the main audio player area
+                        spectrogram_fig = create_spectrogram(distance_audio, 22050)
+                        st.session_state.current_spectrogram = spectrogram_fig
 
             with main_col2:
-                # Display spectrogram
-                st.write("#### Spectrogram")
-                spectrogram_fig = create_spectrogram(distance_audio, 22050)
-                st.pyplot(spectrogram_fig)
+                # Display spectrogram for this sonification type
+                st.write("#### Spectrogram Preview")
+                # Generate audio silently to show spectrogram preview
+                preview_audio = euclidean_distance_strategy(
+                    x_vals,
+                    y_vals,
+                    tone_duration=distance_duration,
+                    min_freq=distance_min_freq,
+                    max_freq=distance_max_freq,
+                )
+                preview_fig = create_spectrogram(preview_audio, 22050)
+                st.pyplot(preview_fig)
+        
+        # Shared audio player section below the tabs
+        st.markdown("---")
+        st.subheader("Audio Player")
+        
+        cols = st.columns([3, 1])
+        with cols[0]:
+            if st.session_state.current_audio is not None:
+                # Display the audio player
+                st.audio(st.session_state.current_audio.astype(np.int16), 
+                         sample_rate=st.session_state.current_audio_sample_rate)
+                
+                # Display download link
+                st.markdown(
+                    get_download_link(
+                        st.session_state.current_audio,
+                        st.session_state.current_audio_sample_rate,
+                        st.session_state.current_audio_name,
+                    ),
+                    unsafe_allow_html=True,
+                )
+            else:
+                st.info("Select a sonification method and click 'Load Audio' to play and visualize the sound.")
+                
+        with cols[1]:
+            if st.session_state.current_audio is not None and 'current_spectrogram' in st.session_state:
+                st.pyplot(st.session_state.current_spectrogram)
 
 
 if __name__ == "__main__":
