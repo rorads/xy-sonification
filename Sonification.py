@@ -411,7 +411,7 @@ def euclidean_distance_strategy(
 
 # Main app
 def main():
-    st.title("Data Sonification Playground")
+    st.header("Data Sonification Playground")
     
     # Initialize session state for current audio
     if 'current_audio' not in st.session_state:
@@ -493,7 +493,7 @@ def main():
         st.write("These sounds trace Rabi oscillations in the pentacene triplet level, following microsecond-scale swings in optical contrast as the molecule's spin state coherently flips between ground and excited triplet configurations. Through bespoke sonification techniques, those quantum pulses become immersive soundscapes—audible echoes of invisible oscillations—that invite listeners to feel the hidden rhythm of light–matter interaction in this exhibition.")
 
     # Sidebar for file upload and configuration
-    st.sidebar.header("Configuration")
+    st.sidebar.markdown("#### Configuration")
 
     # Default data path
     default_data_path = "data/fig3b_multilevel.csv"
@@ -526,7 +526,7 @@ def main():
             csv_file = None
 
     # Navigation links in sidebar
-    st.sidebar.header("Navigation")
+    st.sidebar.markdown("#### Navigation")
 
     # Proceed only if data is available
     if df is not None:
@@ -540,9 +540,9 @@ def main():
         
         # Shared audio player section ABOVE the tabs
         if st.session_state.current_strategy:
-            st.subheader(f"Current Audio: {st.session_state.current_strategy}")
+            st.markdown(f"#### Current Audio: {st.session_state.current_strategy}")
         else:
-            st.subheader("Current Audio")
+            st.markdown("#### Current Audio")
         
         # Create two columns with the requested ratio (2/3 and 1/3)
         spectro_col, player_col = st.columns([1, 3], vertical_alignment="center")
@@ -571,8 +571,7 @@ def main():
                 )
             else:
                 st.info("Select a sonification method below and click 'Load Audio' to play and visualize the sound.")
-                
-    
+     
         
         st.markdown("---")
         
@@ -587,7 +586,7 @@ def main():
 
         # Sine Wave tab
         with sonification_tabs[0]:
-            st.markdown("### Sine Wave Sonification")
+            st.markdown("#### Sine Wave Sonification")
             st.write("Maps the data to simple sine wave tones. Y values control frequency.")
 
             # Create two main columns - left for controls, right for spectrogram
@@ -640,7 +639,7 @@ def main():
 
             with main_col2:
                 # Display spectrogram for this sonification type
-                st.write("#### Spectrogram Preview")
+                st.markdown("##### Spectrogram Preview")
                 # Generate audio silently to show spectrogram preview
                 preview_audio = sine_wave_strategy(
                     x_vals,
@@ -655,7 +654,7 @@ def main():
 
         # FM Synthesis tab
         with sonification_tabs[1]:
-            st.markdown("### FM Synthesis Sonification")
+            st.markdown("#### FM Synthesis Sonification")
             st.write("Uses frequency modulation to create more complex sounds. Y values control modulation index.")
 
             # Create two main columns - left for controls, right for spectrogram
@@ -708,7 +707,7 @@ def main():
 
             with main_col2:
                 # Display spectrogram for this sonification type
-                st.write("#### Spectrogram Preview")
+                st.markdown("##### Spectrogram Preview")
                 # Generate audio silently to show spectrogram preview
                 preview_audio = fm_synthesis_strategy(
                     x_vals,
@@ -723,7 +722,7 @@ def main():
 
         # Granular Synthesis tab
         with sonification_tabs[2]:
-            st.markdown("### Granular Synthesis Sonification")
+            st.markdown("#### Granular Synthesis Sonification")
             st.write("Creates small sound 'grains' from the data, creating textural sounds. Y values control frequency of grains.")
 
             # Create two main columns - left for controls, right for spectrogram
@@ -758,7 +757,7 @@ def main():
 
             with main_col2:
                 # Display spectrogram for this sonification type
-                st.write("#### Spectrogram Preview")
+                st.markdown("##### Spectrogram Preview")
                 # Generate audio silently to show spectrogram preview
                 preview_audio = granular_synthesis_strategy(
                     x_vals, y_vals, grain_size=st.session_state.grain_size, density=st.session_state.grain_density
@@ -768,7 +767,7 @@ def main():
 
         # Harmonic Mapping tab
         with sonification_tabs[3]:
-            st.markdown("### Harmonic Mapping Sonification")
+            st.markdown("#### Harmonic Mapping Sonification")
             st.write("Maps data to harmonic content, creating rich timbral variations. Y values control harmonic distribution.")
 
             # Create two main columns - left for controls, right for spectrogram
@@ -812,7 +811,7 @@ def main():
 
             with main_col2:
                 # Display spectrogram for this sonification type
-                st.write("#### Spectrogram Preview")
+                st.markdown("##### Spectrogram Preview")
                 # Generate audio silently to show spectrogram preview
                 preview_audio = harmonic_mapping_strategy(
                     x_vals,
@@ -826,7 +825,7 @@ def main():
 
         # Euclidean Distance tab
         with sonification_tabs[4]:
-            st.markdown("### Euclidean Distance Sonification")
+            st.markdown("#### Euclidean Distance Sonification")
             st.write("Sonifies the distance between consecutive data points. Larger jumps create higher frequencies.")
 
             # Create two main columns - left for controls, right for spectrogram
@@ -870,7 +869,7 @@ def main():
 
             with main_col2:
                 # Display spectrogram for this sonification type
-                st.write("#### Spectrogram Preview")
+                st.markdown("##### Spectrogram Preview")
                 # Generate audio silently to show spectrogram preview
                 preview_audio = euclidean_distance_strategy(
                     x_vals,
