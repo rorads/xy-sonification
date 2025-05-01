@@ -330,19 +330,31 @@ def harmonic_mapping_strategy(
 
         # Generate harmonics
         segment = np.zeros_like(t)
-        for h in range(1, num_harmonics + 1):
+        
+        # Calculate the number of harmonics for this specific data point (y)
+        # Map y (0-1) to harmonic count (1 to num_harmonics)
+        current_num_harmonics = max(1, int(np.ceil(y * num_harmonics)))
+        
+        # Generate only the calculated number of harmonics
+        for h in range(1, current_num_harmonics + 1):
             # Harmonic frequency
             harmonic_freq = base_freq * h
 
-            # Harmonic amplitude decreases with higher harmonics
-            # Use y value to control harmonic content
-            harmonic_amp = (1.0 / h) * (1.0 - (1.0 - y) * (h / num_harmonics))
+            # Harmonic amplitude decreases naturally with 1/h
+            harmonic_amp = (1.0 / h)
 
             # Add harmonic to segment
             segment += harmonic_amp * np.sin(2 * np.pi * harmonic_freq * t)
 
-        # Normalize segment, apply envelope and scale
-        segment = amplitude_scale * 32767 * segment * envelope / num_harmonics
+        # Normalize segment based on the number of harmonics actually used
+        # This prevents quieter sounds when fewer harmonics are present
+        if current_num_harmonics > 0:
+            segment = segment / np.sqrt(current_num_harmonics) # RMS-like scaling
+            
+        # Apply envelope and overall amplitude scale
+        segment = amplitude_scale * 32767 * segment * envelope
+        # Ensure clipping doesn't occur after scaling
+        segment = np.clip(segment, -32767, 32767)
 
         # Add to audio data
         audio_data[start_sample:end_sample] = segment[
