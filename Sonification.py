@@ -539,7 +539,10 @@ def main():
         # Remove "Data Sonification" heading
         
         # Shared audio player section ABOVE the tabs
-        st.subheader("Current Audio")
+        if st.session_state.current_strategy:
+            st.subheader(f"Current Audio: {st.session_state.current_strategy}")
+        else:
+            st.subheader("Current Audio")
         
         # Create two columns with the requested ratio (2/3 and 1/3)
         spectro_col, player_col = st.columns([1, 3], vertical_alignment="center")
@@ -547,9 +550,7 @@ def main():
         with spectro_col:
             if st.session_state.current_audio is not None and 'current_spectrogram' in st.session_state:
                 st.pyplot(st.session_state.current_spectrogram)
-                # Display caption showing which strategy is currently playing
-                if st.session_state.current_strategy:
-                    st.caption(f"Currently playing: {st.session_state.current_strategy}")
+                # Remove caption as it's now in the heading
             else:
                 st.info("Spectrogram will appear here")
 
