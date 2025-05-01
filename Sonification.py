@@ -586,8 +586,7 @@ def main():
 
         # Sine Wave tab
         with sonification_tabs[0]:
-            st.markdown("#### Sine Wave Sonification")
-            st.write("Maps the data to simple sine wave tones. Y values control frequency.")
+            st.write("Imagine reading the data points like musical notes on a scale. Higher data values correspond to higher pitched notes, creating a simple melody from the data.")
 
             # Create two main columns - left for controls, right for spectrogram
             main_col1, main_col2 = st.columns([1, 2], vertical_alignment="center")
@@ -654,8 +653,7 @@ def main():
 
         # FM Synthesis tab
         with sonification_tabs[1]:
-            st.markdown("#### FM Synthesis Sonification")
-            st.write("Uses frequency modulation to create more complex sounds. Y values control modulation index.")
+            st.write("Think of a base musical tone that gets 'wobbled' or warped. The data values control how much wobble is applied, making the sound richer or more complex.")
 
             # Create two main columns - left for controls, right for spectrogram
             main_col1, main_col2 = st.columns([1, 2], vertical_alignment="center")
@@ -722,8 +720,7 @@ def main():
 
         # Granular Synthesis tab
         with sonification_tabs[2]:
-            st.markdown("#### Granular Synthesis Sonification")
-            st.write("Creates small sound 'grains' from the data, creating textural sounds. Y values control frequency of grains.")
+            st.write("This method breaks the data into tiny sound fragments or 'grains'. Data points influence the pitch of these grains, which are then scattered over time to create a textured soundscape.")
 
             # Create two main columns - left for controls, right for spectrogram
             main_col1, main_col2 = st.columns([1, 2], vertical_alignment="center")
@@ -767,8 +764,7 @@ def main():
 
         # Harmonic Mapping tab
         with sonification_tabs[3]:
-            st.markdown("#### Harmonic Mapping Sonification")
-            st.write("Maps data to harmonic content, creating rich timbral variations. Y values control harmonic distribution.")
+            st.write("Like adjusting the overtones of an instrument to change its sound colour, this strategy uses data to shape the harmonic content (timbre) of a base frequency.")
 
             # Create two main columns - left for controls, right for spectrogram
             main_col1, main_col2 = st.columns([1, 2], vertical_alignment="center")
@@ -825,8 +821,7 @@ def main():
 
         # Euclidean Distance tab
         with sonification_tabs[4]:
-            st.markdown("#### Euclidean Distance Sonification")
-            st.write("Sonifies the distance between consecutive data points. Larger jumps create higher frequencies.")
+            st.write("This approach listens to the *change* between data points, not their absolute value. Larger jumps or differences in the data create higher-pitched sounds, highlighting volatility.")
 
             # Create two main columns - left for controls, right for spectrogram
             main_col1, main_col2 = st.columns([1, 2], vertical_alignment="center")
