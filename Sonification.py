@@ -536,11 +536,10 @@ def main():
             st.error("Could not extract valid numerical data from the CSV file.")
             return
 
-        # Default to sonification
-        st.subheader("Data Sonification")
+        # Remove "Data Sonification" heading
         
         # Shared audio player section ABOVE the tabs
-        st.subheader("Audio Player")
+        st.subheader("Current Audio")
         
         # Create two columns with the requested ratio (2/3 and 1/3)
         player_col, spectro_col = st.columns([2, 1])
