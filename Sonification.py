@@ -238,53 +238,124 @@ def fm_synthesis_strategy(
 
 
 def granular_synthesis_strategy(
-    x_vals, y_vals, sample_rate=22050, grain_size=0.02, density=0.5, amplitude_scale=0.8
+    x_vals, y_vals, sample_rate=22050, grain_size=0.02, density=0.5, amplitude_scale=0.8, recursion_level=0.0
 ):
     """
     Granular synthesis sonification:
     - Creates small sound grains from the data
     - Maps x values to time positioning
-    - Maps y values to frequency content
-    - Creates textural, evolving sounds
+    - Maps y values to source selection for recursive granulation
+    - Creates textural, evolving sounds, potentially more complex with recursion
     """
     # Normalize x and y values
     norm_x = normalize_data(x_vals)
-    norm_y = normalize_data(y_vals)
+    norm_y = normalize_data(y_vals) # Used for source start in recursion
 
     # Calculate total duration - slightly longer to account for grain overlap
     total_duration = len(x_vals) * grain_size * (1 + density)
     total_samples = int(total_duration * sample_rate)
-    audio_data = np.zeros(total_samples)
-
+    
     # Calculate grain size in samples
     grain_samples = int(grain_size * sample_rate)
+    if grain_samples == 0:
+        grain_samples = 1 # Avoid zero-size grains
 
     # Create window function for smoothing grains (Hann window)
     window = np.hanning(grain_samples)
 
-    # Generate grains
+    # --- First Pass: Generate initial sine wave grains ---
+    audio_data_pass1 = np.zeros(total_samples)
+    base_freq_min = 110 # A2
+    base_freq_max = 880 # A5
+
     for i, (x, y) in enumerate(zip(norm_x, norm_y)):
-        # Map y to frequency between 110Hz and 880Hz
-        freq = 110 + 770 * y
+        # Map y to frequency for the base grain
+        freq = base_freq_min + (base_freq_max - base_freq_min) * y
 
         # Position is determined by normalized x value, scaled by total duration
         position = int(x * (total_samples - grain_samples))
+        if position < 0: position = 0
+        if position >= total_samples: position = total_samples - 1
 
-        # Generate grain
+
+        # Generate grain (sine wave for first pass)
         t = np.linspace(0, grain_size, grain_samples, endpoint=False)
         grain = amplitude_scale * 32767 * np.sin(2 * np.pi * freq * t) * window
 
         # Add grain to audio data
-        end_pos = position + grain_samples
-        if end_pos > total_samples:
-            end_pos = total_samples
-        audio_data[position:end_pos] += grain[: end_pos - position]
+        start_idx = position
+        end_idx = position + grain_samples
+        
+        # Ensure indices are within bounds and slice length matches
+        safe_end_idx = min(end_idx, total_samples)
+        grain_length_to_add = safe_end_idx - start_idx
+        
+        if grain_length_to_add > 0:
+           audio_data_pass1[start_idx:safe_end_idx] += grain[:grain_length_to_add]
 
-    # Normalize to avoid clipping
-    if np.max(np.abs(audio_data)) > 32767:
-        audio_data = 32767 * audio_data / np.max(np.abs(audio_data))
+    # --- Recursive Pass (if needed) ---
+    if recursion_level > 0 and total_samples > grain_samples:
+        audio_data_pass2 = np.zeros(total_samples)
+        
+        # Make sure pass 1 audio isn't silent, otherwise recursion is pointless
+        if np.max(np.abs(audio_data_pass1)) > 1e-6: 
+            # Normalize pass 1 slightly to avoid clipping during extraction
+            norm_factor = 30000 / np.max(np.abs(audio_data_pass1)) if np.max(np.abs(audio_data_pass1)) > 30000 else 1.0
+            audio_source = audio_data_pass1 * norm_factor
+        else:
+             audio_source = audio_data_pass1 # Already near silent
 
-    return audio_data
+        max_source_start_index = total_samples - grain_samples
+
+        for i, (x, y) in enumerate(zip(norm_x, norm_y)):
+            # Position determined by x (same as first pass)
+            position = int(x * (total_samples - grain_samples))
+            if position < 0: position = 0
+            if position >= total_samples: position = total_samples - 1
+
+            # Use y to determine where to sample from in the first pass audio
+            source_start = int(y * max_source_start_index)
+            source_start = max(0, min(source_start, max_source_start_index)) # Clamp index
+
+            # Extract segment from the first pass audio
+            source_segment = audio_source[source_start : source_start + grain_samples]
+            
+            # Ensure segment has the correct length (pad if near the end)
+            if len(source_segment) < grain_samples:
+                padding = grain_samples - len(source_segment)
+                source_segment = np.pad(source_segment, (0, padding), 'constant')
+
+            # Apply window to the extracted grain
+            grain = source_segment * window
+
+            # Add grain to the second pass audio buffer
+            start_idx = position
+            end_idx = position + grain_samples
+            
+            safe_end_idx = min(end_idx, total_samples)
+            grain_length_to_add = safe_end_idx - start_idx
+
+            if grain_length_to_add > 0:
+               audio_data_pass2[start_idx:safe_end_idx] += grain[:grain_length_to_add]
+
+        # Mix pass 1 and pass 2
+        final_audio = (1.0 - recursion_level) * audio_data_pass1 + recursion_level * audio_data_pass2
+    else:
+        # No recursion, use only the first pass
+        final_audio = audio_data_pass1
+
+    # Final Normalization to avoid clipping
+    max_abs_val = np.max(np.abs(final_audio))
+    if max_abs_val > 32767:
+        final_audio = 32767 * final_audio / max_abs_val
+    elif max_abs_val == 0: # Avoid division by zero if silent
+        pass # Keep as zeros
+    elif max_abs_val < 1.0: # Amplify potentially quiet results somewhat
+         # Amplify slightly, but cap at 32767 to prevent excessive amplification
+         amplification_factor = min(32767 / max_abs_val, 5.0) # Amplify up to 5x, capped
+         final_audio *= amplification_factor
+
+    return final_audio
 
 
 def harmonic_mapping_strategy(
@@ -472,7 +543,8 @@ def main():
             x_vals, 
             y_vals, 
             grain_size=st.session_state.grain_size, 
-            density=st.session_state.grain_density
+            density=st.session_state.grain_density,
+            recursion_level=st.session_state.recursion_level
         )
         update_audio(granular_audio, "granular_synthesis_sonification.wav", "Granular Synthesis")
         
@@ -747,10 +819,23 @@ def main():
                     key="grain_density_slider",
                     help="Controls how much the grains overlap. Higher values create denser, more continuous textures. Lower values create more sparse, distinct grains."
                 )
+                # Add the recursion slider
+                if 'recursion_level' not in st.session_state:
+                    st.session_state.recursion_level = 0.0 # Initialize if not present
+                    
+                st.session_state.recursion_level = st.slider(
+                    "Recursion Level",
+                    0.0,
+                    1.0,
+                    st.session_state.recursion_level, # Use existing value if available
+                    0.05, # Step size
+                    key="grain_recursion_slider",
+                    help="Controls the amount of recursive granulation. 0 is standard granular synthesis, 1 uses only the second pass. Intermediate values mix the two."
+                )
 
                 # Generate audio when button is clicked
                 st.button("▶️ Load Granular Synthesis Audio",
-                          on_click=generate_granular_synthesis,
+                          on_click=generate_granular_synthesis, # This callback now needs to use recursion_level
                           use_container_width=True, 
                           type="primary")
 
@@ -759,7 +844,11 @@ def main():
                 st.markdown("##### Spectrogram Preview")
                 # Generate audio silently to show spectrogram preview
                 preview_audio = granular_synthesis_strategy(
-                    x_vals, y_vals, grain_size=st.session_state.grain_size, density=st.session_state.grain_density
+                    x_vals, 
+                    y_vals, 
+                    grain_size=st.session_state.grain_size, 
+                    density=st.session_state.grain_density,
+                    recursion_level=st.session_state.recursion_level # Pass recursion level here too
                 )
                 preview_fig = create_spectrogram(preview_audio, 22050)
                 st.pyplot(preview_fig)
