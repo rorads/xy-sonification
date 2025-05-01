@@ -187,7 +187,7 @@ def fm_synthesis_strategy(
     carrier_freq=440,
     mod_index_min=1,
     mod_index_max=5,
-    amplitude_scale=0.8,
+    amplitude_scale=0.5,
 ):
     """
     FM synthesis sonification:
@@ -294,7 +294,7 @@ def harmonic_mapping_strategy(
     tone_duration=0.05,
     base_freq=110,
     num_harmonics=8,
-    amplitude_scale=0.8,
+    amplitude_scale=0.9,
 ):
     """
     Harmonic mapping sonification:
