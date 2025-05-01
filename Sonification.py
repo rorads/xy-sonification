@@ -137,7 +137,6 @@ def sine_wave_strategy(
     tone_duration=0.05,
     min_freq=220,
     max_freq=880,
-    amplitude_scale=0.8,
 ):
     """
     Basic sine wave sonification:
@@ -170,7 +169,7 @@ def sine_wave_strategy(
             envelope[-fade_samples:] = np.linspace(1, 0, fade_samples)
 
         # Generate sine wave and apply envelope
-        segment = amplitude_scale * 32767 * np.sin(2 * np.pi * freq * t) * envelope
+        segment = 32767 * np.sin(2 * np.pi * freq * t) * envelope
 
         # Add to audio data
         audio_data[start_sample:end_sample] = segment[
@@ -453,7 +452,6 @@ def main():
             tone_duration=st.session_state.sine_duration,
             min_freq=st.session_state.sine_min_freq,
             max_freq=st.session_state.sine_max_freq,
-            amplitude_scale=st.session_state.sine_amplitude,
         )
         update_audio(sine_audio, "sine_wave_sonification.wav", "Sine Wave")
         
@@ -465,6 +463,7 @@ def main():
             carrier_freq=st.session_state.fm_carrier,
             mod_index_min=st.session_state.fm_mod_min,
             mod_index_max=st.session_state.fm_mod_max,
+            amplitude_scale=0.8
         )
         update_audio(fm_audio, "fm_synthesis_sonification.wav", "FM Synthesis")
         
@@ -632,15 +631,6 @@ def main():
                     key="sine_max_freq_slider",
                     help="The highest frequency that will be used in the sonification. 880 Hz is approximately A5 on a piano."
                 )
-                st.session_state.sine_amplitude = st.slider(
-                    "Amplitude Scale", 
-                    0.1, 
-                    1.0, 
-                    0.8, 
-                    0.1, 
-                    key="sine_amplitude_slider",
-                    help="Controls the volume of the sound. Higher values create louder sounds."
-                )
 
                 # Generate audio when button is clicked
                 st.button("▶️ Load Sine Wave Audio", 
@@ -658,7 +648,6 @@ def main():
                     tone_duration=st.session_state.sine_duration,
                     min_freq=st.session_state.sine_min_freq,
                     max_freq=st.session_state.sine_max_freq,
-                    amplitude_scale=st.session_state.sine_amplitude,
                 )
                 preview_fig = create_spectrogram(preview_audio, 22050)
                 st.pyplot(preview_fig)
@@ -726,6 +715,7 @@ def main():
                     carrier_freq=st.session_state.fm_carrier,
                     mod_index_min=st.session_state.fm_mod_min,
                     mod_index_max=st.session_state.fm_mod_max,
+                    amplitude_scale=0.8
                 )
                 preview_fig = create_spectrogram(preview_audio, 22050)
                 st.pyplot(preview_fig)
