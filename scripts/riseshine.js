@@ -35,22 +35,143 @@ async function wakeUpApp() {
     
     console.log('Page loaded, checking if app needs waking...');
     
-    // Check if the sleeping page is displayed
-    const sleepContainer = await page.$('._errorContainer_2xb9v_8');
+    // Take initial screenshot
+    if (process.env.GITHUB_ACTIONS) {
+      await page.screenshot({ path: 'initial-page.png', fullPage: true });
+      console.log('Initial page screenshot saved');
+    }
+    
+    // Log the page title and URL
+    const title = await page.title();
+    const url = await page.url();
+    console.log(`Page title: "${title}"`);
+    console.log(`Page URL: ${url}`);
+    
+    // Get and log the page HTML structure
+    const bodyHTML = await page.evaluate(() => {
+      // Get first 2000 characters of body HTML for inspection
+      return document.body ? document.body.innerHTML.substring(0, 2000) : 'No body element found';
+    });
+    console.log('=== PAGE HTML STRUCTURE (first 2000 chars) ===');
+    console.log(bodyHTML);
+    console.log('=== END HTML STRUCTURE ===');
+    
+    // Check for various possible error containers
+    const errorSelectors = [
+      '._errorContainer_2xb9v_8',
+      '[class*="errorContainer"]',
+      '[class*="error"]',
+      'div:contains("sleep")',
+      'div:contains("Zzzz")',
+      'div:contains("inactivity")'
+    ];
+    
+    let sleepContainer = null;
+    let foundSelector = null;
+    
+    for (const selector of errorSelectors) {
+      try {
+        const element = await page.$(selector);
+        if (element) {
+          sleepContainer = element;
+          foundSelector = selector;
+          console.log(`Found sleep container with selector: ${selector}`);
+          break;
+        }
+      } catch (err) {
+        console.log(`Selector "${selector}" failed: ${err.message}`);
+      }
+    }
     
     if (sleepContainer) {
-      console.log('App is sleeping, looking for wake-up button...');
+      console.log(`App is sleeping (found with: ${foundSelector}), looking for wake-up button...`);
       
-      // Wait for the wake-up button specifically
-      await page.waitForSelector('[data-testid="wakeup-button-owner"]', { 
-        timeout: 10000,
-        visible: true 
+      // Log all buttons on the page
+      const allButtons = await page.evaluate(() => {
+        const buttons = Array.from(document.querySelectorAll('button'));
+        return buttons.map((btn, index) => ({
+          index,
+          innerHTML: btn.innerHTML.substring(0, 100),
+          className: btn.className,
+          id: btn.id,
+          testId: btn.getAttribute('data-testid'),
+          type: btn.type,
+          visible: btn.offsetParent !== null
+        }));
       });
       
-      console.log('Wake-up button found, clicking...');
+      console.log('=== ALL BUTTONS ON PAGE ===');
+      console.log(JSON.stringify(allButtons, null, 2));
+      console.log('=== END BUTTONS ===');
       
-      // Click the wake-up button
-      await page.click('[data-testid="wakeup-button-owner"]');
+      // Try multiple button selectors
+      const buttonSelectors = [
+        '[data-testid="wakeup-button-owner"]',
+        'button[data-testid="wakeup-button-owner"]',
+        '[data-testid*="wakeup"]',
+        '[data-testid*="wake"]',
+        'button:contains("Yes, get this app back up!")',
+        'button:contains("wake")',
+        'button:contains("back up")',
+        '._restartButton_2xb9v_14',
+        '[class*="restartButton"]',
+        '[class*="button"][class*="primary"]'
+      ];
+      
+      let wakeButton = null;
+      let buttonSelector = null;
+      
+      for (const selector of buttonSelectors) {
+        try {
+          const element = await page.$(selector);
+          if (element) {
+            const isVisible = await element.isIntersectingViewport();
+            console.log(`Found button with selector "${selector}", visible: ${isVisible}`);
+            if (isVisible) {
+              wakeButton = element;
+              buttonSelector = selector;
+              break;
+            }
+          }
+        } catch (err) {
+          console.log(`Button selector "${selector}" failed: ${err.message}`);
+        }
+      }
+      
+      if (wakeButton) {
+        console.log(`Wake-up button found with selector: ${buttonSelector}, clicking...`);
+        await wakeButton.click();
+      } else {
+        console.log('No wake-up button found, trying to wait for standard selector...');
+        try {
+          // Wait for the wake-up button specifically
+          await page.waitForSelector('[data-testid="wakeup-button-owner"]', { 
+            timeout: 10000,
+            visible: true 
+          });
+          console.log('Standard wake-up button found after waiting, clicking...');
+          await page.click('[data-testid="wakeup-button-owner"]');
+        } catch (waitError) {
+          console.log('Standard selector also failed, trying any button with wake-up text...');
+          
+          // Try clicking any button with wake-up text as last resort
+          const textBasedClick = await page.evaluate(() => {
+            const buttons = Array.from(document.querySelectorAll('button'));
+            for (const btn of buttons) {
+              if (btn.textContent && btn.textContent.toLowerCase().includes('get this app back up')) {
+                btn.click();
+                return true;
+              }
+            }
+            return false;
+          });
+          
+          if (!textBasedClick) {
+            throw new Error('No wake-up button found with any method');
+          }
+          console.log('Clicked button using text-based search');
+        }
+      }
       
       console.log('Wake-up button clicked, waiting for app to start...');
       

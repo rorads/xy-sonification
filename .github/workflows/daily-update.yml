@@ -1,4 +1,4 @@
-name: Daily Text File Update
+name: Daily Update
 
 on:
   schedule:
