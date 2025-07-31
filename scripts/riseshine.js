@@ -189,7 +189,7 @@ async function wakeUpApp() {
       }
       
       // Additional wait to ensure the app is fully loaded
-      await page.waitForTimeout(5000);
+      await new Promise(resolve => setTimeout(resolve, 5000));
       
     } else {
       console.log('App appears to already be awake (no sleep container found)');
