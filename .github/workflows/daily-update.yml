@@ -23,12 +23,30 @@ jobs:
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
     
-    - name: Update text file
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+    
+    - name: Install Puppeteer
+      run: npm install puppeteer
+    
+    - name: Wake up Streamlit app
+      run: node scripts/riseshine.js
+    
+    - name: Update log file
       run: |
-        # Create or update a daily log file
-        echo "Daily update: $(date)" >> daily-log.txt
-        echo "Automated update #$(date +%s)" >> daily-log.txt
+        echo "App wake-up completed: $(date)" >> daily-log.txt
+        echo "Automated wake-up #$(date +%s)" >> daily-log.txt
         echo "" >> daily-log.txt
+    
+    - name: Upload screenshots (if any)
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: wake-up-screenshots
+        path: "*.png"
+        if-no-files-found: ignore
     
     - name: Commit and push changes
       run: |
@@ -36,6 +54,6 @@ jobs:
         if git diff --staged --quiet; then
           echo "No changes to commit"
         else
-          git commit -m "Daily automated update - $(date -I)"
+          git commit -m "Daily app wake-up completed - $(date -I)"
           git push origin master
         fi
