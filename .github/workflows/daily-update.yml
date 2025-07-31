@@ -1,0 +1,39 @@
+name: Daily Text File Update
+
+on:
+  schedule:
+    # Run daily at 9:00 AM UTC
+    - cron: '0 3 * * *'
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  update-file:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Configure git
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+    
+    - name: Update text file
+      run: |
+        # Create or update a daily log file
+        echo "Daily update: $(date)" >> daily-log.txt
+        echo "Automated update #$(date +%s)" >> daily-log.txt
+        echo "" >> daily-log.txt
+    
+    - name: Commit and push changes
+      run: |
+        git add daily-log.txt
+        if git diff --staged --quiet; then
+          echo "No changes to commit"
+        else
+          git commit -m "Daily automated update - $(date -I)"
+          git push origin master
+        fi
